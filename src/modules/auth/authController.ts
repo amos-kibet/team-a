@@ -128,8 +128,13 @@ const authController = {
   confirmAccount: async (req: Request, res: Response) => {
     try {
       const { token } = req.params;
+<<<<<<< HEAD
       const isValidToken = jwt.verify(token, "africanReactor2022");
       console.log(isValidToken);
+=======
+      const isValidToken:any =  jwt.verify(token, 'africanReactor2022' )
+      console.log(isValidToken); 
+>>>>>>> 9de0adf0c6f4da7ec330242d0c74c4bcea0c5509
       const user = await User.findOne({ email: isValidToken?.email }).exec();
       user.isActive = true;
       user.save();
@@ -139,6 +144,7 @@ const authController = {
     } catch (error) {
       return errorHandler(error.message, 500, res);
     }
+<<<<<<< HEAD
   },
 
   // requestNewActivationToken: async () => {
@@ -149,6 +155,9 @@ const authController = {
   // email intergrations  sendgrid / nodemailer
 
   //
+=======
+  }
+>>>>>>> 9de0adf0c6f4da7ec330242d0c74c4bcea0c5509
 };
 
 export default authController;
