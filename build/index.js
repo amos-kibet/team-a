@@ -7,20 +7,25 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const dotenv_1 = __importDefault(require("dotenv"));
+//import { createConnection } from "typeorm";
 require("reflect-metadata");
-//Routes
-const index_1 = __importDefault(require("./modules/index"));
+// //Routes
+// import routes from "./modules/index";
 dotenv_1.default.config();
 const modules_1 = __importDefault(require("./modules"));
 const mongoose_1 = __importDefault(require("mongoose"));
+//import { appendFile } from "fs";
 const PORT = process.env.PORT;
 const uri = process.env.MONGO_URL;
+/*
 const options = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
 };
 // mongoose.set("useFindAndModify", false)
+
+*/
 mongoose_1.default
     .connect(uri)
     .then((result) => {
@@ -28,7 +33,7 @@ mongoose_1.default
     app.use((0, cors_1.default)());
     app.use(express_1.default.json());
     app.use((0, helmet_1.default)());
-    app.use(index_1.default);
+    // app.use(routes);
     (0, modules_1.default)(app);
     app.get("/", (req, res) => res.status(200).json({ data: "I am the Backend API, happy hacking" }));
     app.get("**", (req, res) => res.status(404).json({ "Not Found": "Not Found" }));

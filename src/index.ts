@@ -2,7 +2,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
-import { createConnection } from "typeorm";
+//import { createConnection } from "typeorm";
 import "reflect-metadata";
 
 // //Routes
@@ -13,11 +13,12 @@ dotenv.config();
 import modules from "./modules";
 
 import mongoose from "mongoose";
-import { appendFile } from "fs";
+//import { appendFile } from "fs";
 
 const PORT = process.env.PORT;
 
 const uri: string = process.env.MONGO_URL;
+/*
 const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -25,6 +26,7 @@ const options = {
 };
 // mongoose.set("useFindAndModify", false)
 
+*/
 mongoose
   .connect(uri)
   .then((result) => {

@@ -21,8 +21,9 @@ const bcryptConfig_1 = __importDefault(require("../auth/bcryptConfig"));
 const responseHandler_1 = __importDefault(require("../../helpers/responseHandler"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const errorHandler_1 = __importDefault(require("../../helpers/errorHandler"));
+const sendGridHelper_1 = __importDefault(require("../../helpers/sendGridHelper"));
 // improvement
-// class authController { 
+// class authController {
 //   static async register(req,res){
 //   }
 // }
@@ -47,11 +48,13 @@ const authController = {
                 password,
                 access_token,
             }).save();
-            //jwt 
-            const token = jsonwebtoken_1.default.sign({ email }, 'africanReactor2022', { expiresIn: '7d' });
-            // return res.status(201).json(newUser);
-            // handle email functionality here
-            return (0, responseHandler_1.default)(res, 'Registration Success. Kindly check your email for an activation link', 201, token);
+            //jwt
+            // email-intergrations
+            const token = jsonwebtoken_1.default.sign({ email }, "africanReactor2022", {
+                expiresIn: "7d",
+            });
+            yield sendGridHelper_1.default.sendConfirmationMail(token, email);
+            return (0, responseHandler_1.default)(res, "Registration Success. Kindly check your email for an activation link", 201, token);
         }
         catch (err) {
             // return res.status(500).json({ message: "Internal Server Error" });
@@ -69,25 +72,28 @@ const authController = {
             const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
             if (!isPasswordValid)
                 return res.status(401).json({ message: "Password is Wrong!" });
-            // intergrate jwt here  - Kevin 
+            if (!user.isActive) {
+                return res
+                    .status(401)
+                    .json({ message: "Activate your account to login" });
+            }
+            // intergrate jwt here  - Kevin
+            const token = jsonwebtoken_1.default.sign({ email }, "africanReactor2022", {
+                expiresIn: "7d",
+            });
             //make use of global responeHandler
             return res.status(200).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                access_token: user.access_token,
+                token,
                 // isAdmin: true / false
             });
         }
         catch (err) {
-            // make use of global errorHandler 
+            // make use of global errorHandler
             return res.status(500).json({ message: "Internal Server Error" });
         }
     }),
     loadProfile: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            // profile  req.headers['Authori] -  req.user = user 
-            // return responseHandler(res,'Profile loaded',200,req.user)
             const { id: _id } = req.params;
             const noSelect = ["-password", "-email", "-access_token"]; // excludes these fields from the user { }
             if (_id) {
@@ -103,17 +109,26 @@ const authController = {
             return res.status(500).json({ message: "Internal Server Error" });
         }
     }),
-    // confirmAccount: async( ) => {
-    //   {token} =  req.params  
-    //   jwt.verify() 
-    //   load the user = user() 
-    //   isActive - true() default to false 
+    confirmAccount: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const { token } = req.params;
+            const isValidToken = jsonwebtoken_1.default.verify(token, "africanReactor2022");
+            console.log(isValidToken);
+            const user = yield User_1.default.findOne({ email: isValidToken === null || isValidToken === void 0 ? void 0 : isValidToken.email }).exec();
+            user.isActive = true;
+            user.save();
+            return (0, responseHandler_1.default)(res, "Account confirmation successful", 200, user);
+            // return responseHandler(res, 'Registration Success. Kindly check your email for an activation link', 201,token );
+        }
+        catch (error) {
+            return (0, errorHandler_1.default)(error.message, 500, res);
+        }
+    }),
+    // requestNewActivationToken: async () => {
+    //   {email } = req.body
+    //   resend a new token ( payload : token (email, user {}))
     // }
-    // requestNewActivationToken: async () => { 
-    //   {email } = req.body 
-    //   resend a new token ( payload : token (email, user {})) 
-    // }
-    // email intergrations  sendgrid / nodemailer  
-    // 
+    // email intergrations  sendgrid / nodemailer
+    //
 };
 exports.default = authController;
